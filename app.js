@@ -98,15 +98,14 @@ app.post("/authenticateTeacher", async (req, res) => {
     if (!teacherPassword) {
       res.status(403).json({
         success: false,
-        message:
-          "Invalid credentials. Only teachers are allowed to authenticate.",
+        message: "Invalid credentials.",
       });
     } else {
       // Set the flag to indicate attendance is accessible
       isAttendanceAccessible = true;
       res.json({
         success: true,
-        message: "Teacher authenticated successfully.",
+        message: "Authenticated successfully.",
       });
     }
   } catch (err) {
@@ -177,7 +176,7 @@ app.post("/markAttendance", async (req, res) => {
 app.post("/logout", (req, res) => {
   // Reset the flag to indicate that attendance is no longer accessible
   isAttendanceAccessible = false;
-  res.json({ success: true, message: "Teacher logged out successfully." });
+  res.json({ success: true, message: "Logged out successfully." });
 });
 
 // Server listening on port
