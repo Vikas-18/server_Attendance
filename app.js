@@ -123,8 +123,8 @@ app.get("/teacherAuthenticationStatus", (req, res) => {
 // POST endpoint to mark attendance with location check
 app.post("/markAttendance", async (req, res) => {
   const { rollNumber, latitude, longitude } = req.body;
-  const classroomLatitude = 21.2339; // Replace with the actual latitude of the classroom
-  const classroomLongitude = 81.6328; // Replace with the actual longitude of the classroom
+  const classroomLatitude = 21.2486; // Replace with the actual latitude of the classroom
+  const classroomLongitude = 81.6094; // Replace with the actual longitude of the classroom
 
   try {
     // Check if the user exists
@@ -145,7 +145,7 @@ app.post("/markAttendance", async (req, res) => {
       );
 
       // Set your threshold distance (adjust as needed)
-      const thresholdDistance = 1; // Adjust this value based on your needs
+      const thresholdDistance = 10; // Adjust this value based on your needs
 
       // Check if the user is within the threshold distance of the classroom
       if (distance <= thresholdDistance) {
