@@ -34,7 +34,7 @@ const Result = mongoose.model("Result", {
   rollNumber: String,
   latitude: String,
   longitude: String,
-  distance: String,
+  distance: { type: Number, default: 0 }, // or use Decimal if more precision is needed
   attendanceCount: { type: Number, default: 0 },
 });
 
