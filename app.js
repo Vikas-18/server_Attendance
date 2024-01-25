@@ -146,7 +146,7 @@ app.post("/markAttendance", async (req, res) => {
       );
 
       // Set your threshold distance (adjust as needed)
-      const thresholdDistance = 1; // Adjust this value based on your needs
+      const thresholdDistance = 10; // Adjust this value based on your needs
 
       // Check if the user is within the threshold distance of the classroom
       if (distance <= thresholdDistance) {
