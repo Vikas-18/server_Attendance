@@ -34,6 +34,7 @@ const Result = mongoose.model("Result", {
   rollNumber: String,
   latitude: String,
   longitude: String,
+  distance: String,
   attendanceCount: { type: Number, default: 0 },
 });
 
@@ -114,6 +115,7 @@ app.post("/authenticateTeacher", async (req, res) => {
   }
 });
 
+//get api
 app.get("/teacherAuthenticationStatus", (req, res) => {
   // Send the current status of isAttendanceAccessible
   res.json({ success: isAttendanceAccessible });
@@ -151,11 +153,23 @@ app.post("/markAttendance", async (req, res) => {
         // Find the existing result entry for the user
         const existingResult = await Result.findOne({ rollNumber });
 
-        // If a result entry exists, increment the attendance count
+        // If a result entry exists, increment the attendance count and update location information
         if (existingResult) {
           existingResult.attendanceCount =
             (existingResult.attendanceCount || 0) + 1;
+          existingResult.latitude = latitude;
+          existingResult.longitude = longitude;
+          existingResult.distance = distance.toFixed(2); // Store distance with two decimal places
           await existingResult.save();
+        } else {
+          // If no result entry exists, create a new one
+          await Result.create({
+            rollNumber,
+            latitude,
+            longitude,
+            distance: distance.toFixed(2),
+            attendanceCount: 1,
+          });
         }
 
         res.json({ success: true, message: "Attendance marked successfully." });
