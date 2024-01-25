@@ -49,7 +49,7 @@ let isAttendanceAccessible = false;
 
 // Function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const earthRadius = 6371; // Radius of the Earth in kilometers
+  const earthRadius = 6371000; // Radius of the Earth in meters
 
   // Convert latitude and longitude from degrees to radians
   const radLat1 = (Math.PI / 180) * lat1;
@@ -71,7 +71,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  // Distance in kilometers
+  // Distance in meters
   const distance = earthRadius * c;
 
   return distance;
@@ -159,7 +159,7 @@ app.post("/markAttendance", async (req, res) => {
             (existingResult.attendanceCount || 0) + 1;
           existingResult.latitude = latitude;
           existingResult.longitude = longitude;
-          existingResult.distance = distance.toFixed(2); // Store distance with two decimal places
+          existingResult.distance = distance.toFixed(6); // Store distance with two decimal places
           await existingResult.save();
         } else {
           // If no result entry exists, create a new one
@@ -167,7 +167,7 @@ app.post("/markAttendance", async (req, res) => {
             rollNumber,
             latitude,
             longitude,
-            distance: distance.toFixed(2),
+            distance: distance.toFixed(6),
             attendanceCount: 1,
           });
         }
