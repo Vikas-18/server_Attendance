@@ -37,15 +37,12 @@ const Result = mongoose.model("Result", {
   distance: { type: Number, default: 0 }, // or use Decimal if more precision is needed
   attendanceCount: { type: Number, default: 0 },
 });
-
 const PasswordSchema = mongoose.Schema({
   password: String,
+  isAllowed: { type: Boolean, default: false },
 });
 
 const Password = mongoose.model("Password", PasswordSchema);
-
-// Flag to indicate if attendance is accessible
-let isAttendanceAccessible = false;
 
 // Function to calculate distance between two sets of coordinates using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -77,7 +74,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return distance;
 }
 
-// get API
+// get API for records
 app.get("/getResults", async (req, res) => {
   try {
     const results = await Result.find(); // Fetch all results
@@ -89,7 +86,7 @@ app.get("/getResults", async (req, res) => {
   }
 });
 
-// post API
+// post API to authenticate
 app.post("/authenticateTeacher", async (req, res) => {
   const { password } = req.body;
 
@@ -102,8 +99,10 @@ app.post("/authenticateTeacher", async (req, res) => {
         message: "Invalid credentials.",
       });
     } else {
-      // Set the flag to indicate attendance is accessible
-      isAttendanceAccessible = true;
+      // Set the isAllowed field to true to indicate attendance is accessible
+      teacherPassword.isAllowed = true;
+      await teacherPassword.save();
+
       res.json({
         success: true,
         message: "Authenticated successfully.",
@@ -115,10 +114,20 @@ app.post("/authenticateTeacher", async (req, res) => {
   }
 });
 
-//get api
-app.get("/teacherAuthenticationStatus", (req, res) => {
-  // Send the current status of isAttendanceAccessible
-  res.json({ success: isAttendanceAccessible });
+//get api for status
+app.get("/teacherAuthenticationStatus", async (req, res) => {
+  try {
+    const teacherPassword = await Password.findOne();
+
+    if (!teacherPassword) {
+      res.json({ success: false, isAllowed: false });
+    } else {
+      res.json({ success: true, isAllowed: teacherPassword.isAllowed });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
 });
 
 // POST endpoint to mark attendance with location check
@@ -187,10 +196,22 @@ app.post("/markAttendance", async (req, res) => {
 });
 
 // Logout endpoint to reset the flag when the teacher logs out
-app.post("/logout", (req, res) => {
-  // Reset the flag to indicate that attendance is no longer accessible
-  isAttendanceAccessible = false;
-  res.json({ success: true, message: "Logged out successfully." });
+app.post("/logout", async (req, res) => {
+  try {
+    // Find the first password entry (assuming there's only one)
+    const teacherPassword = await Password.findOne();
+
+    if (teacherPassword) {
+      // Reset the isAllowed field to false to block attendance access
+      teacherPassword.isAllowed = false;
+      await teacherPassword.save();
+    }
+
+    res.json({ success: true, message: "Logged out successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
 });
 
 // Server listening on port
