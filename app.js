@@ -116,18 +116,8 @@ app.post("/authenticateTeacher", async (req, res) => {
 
 //get api for status
 app.get("/teacherAuthenticationStatus", async (req, res) => {
-  try {
-    const teacherPassword = await Password.findOne();
-
-    if (!teacherPassword) {
-      res.json({ success: false, isAllowed: false });
-    } else {
-      res.json({ success: true, isAllowed: teacherPassword.isAllowed });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Internal server error." });
-  }
+  const teacherPassword = await Password.findOne();
+  res.json({ success: true, isAllowed: teacherPassword.isAllowed });
 });
 
 // POST endpoint to mark attendance with location check
@@ -197,21 +187,11 @@ app.post("/markAttendance", async (req, res) => {
 
 // Logout endpoint to reset the flag when the teacher logs out
 app.post("/logout", async (req, res) => {
-  try {
-    // Find the first password entry (assuming there's only one)
-    const teacherPassword = await Password.findOne();
-
-    if (teacherPassword) {
-      // Reset the isAllowed field to false to block attendance access
-      teacherPassword.isAllowed = false;
-      await teacherPassword.save();
-    }
-
-    res.json({ success: true, message: "Logged out successfully." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Internal server error." });
-  }
+  // Find the first password entry (assuming there's only one)
+  const teacherPassword = await Password.findOne();
+  teacherPassword.isAllowed = false;
+  await teacherPassword.save();
+  res.json({ success: true, message: "Logged out successfully." });
 });
 
 // Server listening on port
