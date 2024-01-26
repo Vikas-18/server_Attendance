@@ -123,8 +123,8 @@ app.get("/teacherAuthenticationStatus", async (req, res) => {
 // POST endpoint to mark attendance with location check
 app.post("/markAttendance", async (req, res) => {
   const { rollNumber, latitude, longitude } = req.body;
-  const classroomLatitude = 21.2484343; // Replace with the actual latitude of the classroom
-  const classroomLongitude = 81.6094401; // Replace with the actual longitude of the classroom
+  const classroomLatitude = 21.2485759; // Replace with the actual latitude of the classroom
+  const classroomLongitude = 81.6094231; // Replace with the actual longitude of the classroom
 
   try {
     // Check if the user exists
