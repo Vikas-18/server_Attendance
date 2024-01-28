@@ -30,13 +30,13 @@ const User = mongoose.model("User", {
   rollNumber: String,
 });
 
-const ResultSchema = mongoose.Schema({
+const Result = mongoose.model("Result", {
   rollNumber: String,
   latitude: String,
   longitude: String,
   distance: { type: Number, default: 0 }, // or use Decimal if more precision is needed
   attendanceCount: { type: Number, default: 0 },
-  date: { type: Date, default: Date.now }, // Add a field to store the date
+  lastAttendanceDate: String, // Add this line to include the new field
 });
 
 const PasswordSchema = mongoose.Schema({
@@ -151,30 +151,37 @@ app.post("/markAttendance", async (req, res) => {
 
       // Check if the user is within the threshold distance of the classroom
       if (distance <= thresholdDistance) {
-        // Check if the user has already marked attendance on the current date
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set time to the beginning of the day
+        // Find the existing result entry for the user
+        const existingResult = await Result.findOne({ rollNumber });
 
-        const existingResult = await Result.findOne({
-          rollNumber,
-          date: today,
-        });
-
-        if (existingResult) {
+        // Check if the user has already marked attendance today
+        const today = new Date().toLocaleDateString();
+        if (existingResult && existingResult.lastAttendanceDate === today) {
           res.status(403).json({
             success: false,
             message: "Attendance already marked for today.",
           });
         } else {
-          // If no result entry exists for today, create a new one
-          await Result.create({
-            rollNumber,
-            latitude,
-            longitude,
-            distance: distance.toFixed(6),
-            attendanceCount: 1,
-            date: today,
-          });
+          // If a result entry exists, increment the attendance count and update location information
+          if (existingResult) {
+            existingResult.attendanceCount =
+              (existingResult.attendanceCount || 0) + 1;
+            existingResult.latitude = latitude;
+            existingResult.longitude = longitude;
+            existingResult.distance = distance.toFixed(6); // Store distance with two decimal places
+            existingResult.lastAttendanceDate = today;
+            await existingResult.save();
+          } else {
+            // If no result entry exists, create a new one
+            await Result.create({
+              rollNumber,
+              latitude,
+              longitude,
+              distance: distance.toFixed(6),
+              attendanceCount: 1,
+              lastAttendanceDate: today,
+            });
+          }
 
           res.json({
             success: true,
